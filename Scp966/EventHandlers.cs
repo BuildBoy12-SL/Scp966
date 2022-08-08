@@ -28,11 +28,19 @@ namespace Scp966
         /// <inheritdoc cref="Exiled.Events.Handlers.Player.OnChangingRole(ChangingRoleEventArgs)"/>
         public void OnChangingRole(ChangingRoleEventArgs ev)
         {
-            if (!ev.IsAllowed || !plugin.Config.GoggledClasses.Spawnable.TryGetValue(ev.NewRole, out Chance chance))
+            if (!ev.IsAllowed)
                 return;
 
             ev.Player.SessionVariables.Remove("Has966Goggles");
+            foreach (Player player in plugin.Config.Scp966.TrackedPlayers)
+                ev.Player.TargetGhostsHashSet.Add(player.Id);
 
+            Log.Debug($"Removed goggles from player [{ev.Player}] on {nameof(OnChangingRole)}", plugin.Config.Debug);
+
+            if (!plugin.Config.GoggledClasses.Spawnable.TryGetValue(ev.NewRole, out Chance chance))
+                return;
+
+            Log.Debug($"Checking goggles custom role blacklist for player [{ev.Player}]", plugin.Config.Debug);
             foreach (string blacklistedRoleName in plugin.Config.GoggledClasses.CustomRoleBlacklist)
             {
                 if (CustomRole.TryGet(blacklistedRoleName, out CustomRole blacklistedRole) &&
@@ -40,26 +48,18 @@ namespace Scp966
                     return;
             }
 
+            Log.Debug($"Checking goggles chance for player [{ev.Player}]", plugin.Config.Debug);
             if (!chance.IsSuccess())
+            {
+                Log.Debug($"Goggles chance for player failed [{ev.Player}]", plugin.Config.Debug);
                 return;
+            }
 
+            Log.Debug($"Goggles chance for player succeeded, granting [{ev.Player}]", plugin.Config.Debug);
             ev.Player.Broadcast(plugin.Config.GoggledClasses.SpawnBroadcast);
             ev.Player.SessionVariables.Add("Has966Goggles", true);
             foreach (Player player in plugin.Config.Scp966.TrackedPlayers)
                 ev.Player.TargetGhostsHashSet.Remove(player.Id);
-        }
-
-        /// <summary>
-        /// <inheritdoc cref="Exiled.Events.Handlers.Server.OnWaitingForPlayers()"/>
-        /// Used as a precaution in case something is weird during fast round restarts.
-        /// </summary>
-        public void OnWaitingForPlayers()
-        {
-            foreach (Player player in Player.List)
-            {
-                player.SessionVariables.Remove("Has966Goggles");
-                player.TargetGhostsHashSet.Clear();
-            }
         }
     }
 }

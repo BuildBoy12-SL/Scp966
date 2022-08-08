@@ -36,6 +36,7 @@ namespace Scp966.Patches
                 subtitleParts = hit.CassieDeathAnnouncement.SubtitleParts,
             });
 
+            Log.Debug($"Announcing Scp966 for player [{scp.nicknameSync.Network_myNickSync}]", Plugin.Instance.Config.Debug);
             return false;
         }
     }

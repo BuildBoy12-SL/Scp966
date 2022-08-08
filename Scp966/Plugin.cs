@@ -50,7 +50,6 @@ namespace Scp966
             Config.Register();
             eventHandlers = new EventHandlers(this);
             Exiled.Events.Handlers.Player.ChangingRole += eventHandlers.OnChangingRole;
-            Exiled.Events.Handlers.Server.WaitingForPlayers += eventHandlers.OnWaitingForPlayers;
             base.OnEnabled();
         }
 
@@ -58,7 +57,6 @@ namespace Scp966
         public override void OnDisabled()
         {
             Exiled.Events.Handlers.Player.ChangingRole -= eventHandlers.OnChangingRole;
-            Exiled.Events.Handlers.Server.WaitingForPlayers -= eventHandlers.OnWaitingForPlayers;
             eventHandlers = null;
             harmony.UnpatchAll(harmony.Id);
             harmony = null;

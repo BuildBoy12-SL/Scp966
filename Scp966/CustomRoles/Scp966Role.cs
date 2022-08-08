@@ -134,6 +134,7 @@ namespace Scp966.CustomRoles
         /// <inheritdoc />
         protected override void RoleAdded(Player player)
         {
+            Log.Debug($"[{nameof(RoleAdded)}] {player}", Plugin.Instance.Config.Debug);
             if (!ahpProcesses.ContainsKey(player.Id))
                 ahpProcesses.Add(player.Id, HumeShield.AddTo(player));
 
@@ -143,6 +144,7 @@ namespace Scp966.CustomRoles
                     continue;
 
                 ply.TargetGhostsHashSet.Add(player.Id);
+                Log.Debug($"[{nameof(RoleAdded)}] Added targeted invisibility, {ply} can no longer see {player}", Plugin.Instance.Config.Debug);
             }
 
             base.RoleAdded(player);
@@ -151,6 +153,7 @@ namespace Scp966.CustomRoles
         /// <inheritdoc />
         protected override void RoleRemoved(Player player)
         {
+            Log.Debug($"[{nameof(RoleRemoved)}] {player}", Plugin.Instance.Config.Debug);
             if (ahpProcesses.TryGetValue(player.Id, out AhpStat.AhpProcess ahpProcess))
             {
                 player.GetModule<AhpStat>().ServerKillProcess(ahpProcess.KillCode);
@@ -158,7 +161,10 @@ namespace Scp966.CustomRoles
             }
 
             foreach (Player ply in Player.List)
+            {
                 ply.TargetGhostsHashSet.Remove(player.Id);
+                Log.Debug($"[{nameof(RoleRemoved)}] Removed targeted invisibility, {ply} can now see {player}", Plugin.Instance.Config.Debug);
+            }
 
             base.RoleRemoved(player);
         }
@@ -181,28 +187,21 @@ namespace Scp966.CustomRoles
 
         private void OnSpawned(SpawnedEventArgs ev)
         {
-            if (ev.Player.SessionVariables.ContainsKey("SpawnScp966"))
-            {
-                AddRole(ev.Player);
-                ev.Player.SessionVariables.Remove("SpawnScp966");
-            }
-
-            if (ev.Player.IsDead || ev.Player.SessionVariables.ContainsKey("Has966Goggles") || (ScpsCanSee && ev.Player.IsScp))
-            {
-                foreach (Player player in TrackedPlayers)
-                    ev.Player.TargetGhostsHashSet.Remove(player.Id);
-
+            if (!ev.Player.SessionVariables.ContainsKey("SpawnScp966"))
                 return;
-            }
 
-            foreach (Player player in TrackedPlayers)
-                ev.Player.TargetGhostsHashSet.Add(player.Id);
+            Log.Debug($"[{nameof(OnSpawned)}] Player has been selected to spawn as {nameof(Name)}, spawning {nameof(Name)}", Plugin.Instance.Config.Debug);
+            AddRole(ev.Player);
+            ev.Player.SessionVariables.Remove("SpawnScp966");
         }
 
         private void OnVerified(VerifiedEventArgs ev)
         {
             foreach (Player player in TrackedPlayers)
+            {
                 ev.Player.TargetGhostsHashSet.Add(player.Id);
+                Log.Debug($"[{nameof(OnVerified)}] Added targeted invisibility, {ev.Player} can no longer see {player}", Plugin.Instance.Config.Debug);
+            }
         }
 
         private IEnumerator<float> RunAddRole(Player player, bool isDelayed)

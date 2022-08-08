@@ -19,6 +19,11 @@ namespace Scp966
         public bool IsEnabled { get; set; } = true;
 
         /// <summary>
+        /// Gets or sets a value indicating whether debug logs should be enabled.
+        /// </summary>
+        public bool Debug { get; set; } = false;
+
+        /// <summary>
         /// Gets or sets a configurable instance of the <see cref="Scp966Role"/> custom role.
         /// </summary>
         public Scp966Role Scp966 { get; set; } = new Scp966Role();
